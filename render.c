@@ -64,12 +64,12 @@ void clear_cell(int x, int y) {
     fflush(stdout);
 }
 
-// Clear tail cell, use clear_cell for now
+// Clear tail cell
 void clear_tail(int x, int y) {
     clear_cell(x, y);
 }
 
-// Draw apple at (x, y) in yellow
+
 void draw_apple(int x, int y) {
     printf("\e[%dB\e[%dC%s%s%s", y + 1, x + 1, COLOR_YELLOW, apple_symbol, COLOR_RESET);
     printf("\e[%dF", y + 1);
