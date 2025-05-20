@@ -1,35 +1,3 @@
-// #include <stdlib.h>
-// #include "render.h"
-// #include "apple.h"
-
-// #define MAX_LEN 1000 
-
-
-// void spawn_apple(int *x1, int *y1, int head1, int tail1,
-//     int *x2, int *y2, int head2, int tail2,
-//     int *applex, int *appley) {
-// while (1) {
-// int valid = 1;
-// *applex = rand() % COLS;
-// *appley = rand() % ROWS;
-
-// for (int i = tail1; i != head1; i = (i + 1) % MAX_LEN)
-// if (x1[i] == *applex && y1[i] == *appley)
-//    valid = 0;
-// for (int i = tail2; i != head2; i = (i + 1) % MAX_LEN)
-// if (x2[i] == *applex && y2[i] == *appley)
-//    valid = 0;
-
-// if (valid) break;
-// }
-
-// draw_apple(*applex, *appley);
-// }
-// int check_apple_collision(int headx, int heady, int applex, int appley) {
-//     return (headx == applex && heady == appley);
-// }
-
-// apple.c
 #include <stdlib.h>
 #include "game.h"
 #include "render.h"
