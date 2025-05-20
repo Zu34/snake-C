@@ -9,39 +9,6 @@
 #include <time.h>
 #include "apple.h"
 
-
-#define MAX_LEN 1000
-#define MAX_OBSTACLES 20
-#define POWERUP_DURATION 50
-
-// Snake1
-static int x1[MAX_LEN], y1[MAX_LEN];
-static int head1 = 0, tail1 = 0;
-static int xdir1 = 1, ydir1 = 0;
-static int score1 = 0;
-
-// Snake2
-static int x2[MAX_LEN], y2[MAX_LEN];
-static int head2 = 0, tail2 = 0;
-static int xdir2 = -1, ydir2 = 0;
-static int score2 = 0;
-
-// Apple & Power-ups
-static int applex = -1, appley = -1;
-static int powerx = -1, powery = -1;
-static char power_type = 0;  // 'S' or 'D'
-static int power_timer = 0;
-
-// Obstacles
-static int obsx[MAX_OBSTACLES], obsy[MAX_OBSTACLES];
-static int num_obstacles = 0;
-
-static int gameover = 0;
-static int quit = 0;
-static int paused = 0;
-static int speed_boost = 0;
-static int double_score = 0;
-
 void init_obstacles() {
     num_obstacles = 5;
     for (int i = 0; i < num_obstacles; i++) {
@@ -76,7 +43,7 @@ void spawn_apple() {
 }
 
 void spawn_powerup() {
-    if (powerx >= 0) return;  // already active
+    if (powerx >= 0) return; 
     if (rand() % 10 < 3) return;  // 30% chance
 
     powerx = rand() % COLS;
@@ -124,7 +91,6 @@ void move_snake(int *x, int *y, int *head, int *tail,
         *tail = (*tail + 1) % MAX_LEN;
     }
     
-
     // Power-up
     if (x[newhead] == powerx && y[newhead] == powery) {
         if (power_type == 'S') speed_boost = 1;
@@ -183,4 +149,17 @@ void run_game_loop() {
         printf("Final Score: P1=%d P2=%d\n", player1.score, player2.score);
         getchar();
     }
+}
+void spawn_powerup() {
+    if (powerx >= 0) return;  // Power-up already active
+    if (rand() % 10 < 7) return;  // ~30% chance to spawn
+
+    powerx = rand() % COLS;
+    powery = rand() % ROWS;
+
+    char power_types[] = {'S', 'D', 'F', 'T', 'R'};
+    power_type = power_types[rand() % 5];
+
+    draw_powerup(powerx, powery, power_type);
+    power_timer = POWERUP_DURATION;
 }

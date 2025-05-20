@@ -6,11 +6,9 @@
 #include "position.h"
 #include <stdlib.h>
 
-extern int applex, appley;
-extern int gameover;
-extern int powerx, powery, power_timer;
-extern char power_type;
-extern int speed_boost, double_score;
+#define POWERUP_DURATION 50
+
+static int power_timer = 0;
 
 void init_player(Player *p, int start_x, int start_y, int xdir, int ydir, int id) {
     p->head = p->tail = 0;
@@ -23,7 +21,31 @@ void init_player(Player *p, int start_x, int start_y, int xdir, int ydir, int id
     draw_snake_head(start_x, start_y, id);
 }
 
+void teleport_player(Player *p) {
+    int tx, ty;
+    do {
+        tx = rand() % COLS;
+        ty = rand() % ROWS;
+    } while (position_in_snake((Position){tx, ty}, p->x, p->head, p->tail) || is_obstacle(tx, ty));
+    p->x[p->head] = tx;
+    p->y[p->head] = ty;
+}
+
+void shrink_player(Player *p) {
+    // Shrink player 
+    if (p->head != p->tail) {
+        p->tail = (p->tail + 1) % MAX_LEN;
+    }
+}
+
+
 void move_player(Player *p, Player *opponent) {
+    if (p->frozen_turns > 0) {
+        p->frozen_turns--;
+        // Skip move if frozen
+        return;
+    }
+
     clear_tail(p->x[p->tail], p->y[p->tail]);
 
     int newhead = (p->head + 1) % MAX_LEN;
@@ -33,10 +55,11 @@ void move_player(Player *p, Player *opponent) {
     if (position_in_snake((Position){p->x[newhead], p->y[newhead]}, p->x, p->head, p->tail))
         gameover = 1;
 
-  
+
     if (position_in_snake((Position){p->x[newhead], p->y[newhead]}, opponent->x, opponent->head, opponent->tail))
         gameover = 1;
 
+ 
     if (is_obstacle(p->x[newhead], p->y[newhead]))
         gameover = 1;
 
@@ -50,8 +73,13 @@ void move_player(Player *p, Player *opponent) {
     }
 
     if (p->x[newhead] == powerx && p->y[newhead] == powery) {
-        if (power_type == 'S') speed_boost = 1;
-        if (power_type == 'D') double_score = 1;
+        switch (power_type) {
+            case 'S': speed_boost = 1; break;
+            case 'D': double_score = 1; break;
+            case 'F': opponent->frozen_turns = 5; break;
+            case 'T': teleport_player(p); break;
+            case 'R': shrink_player(opponent); break;
+        }
         powerx = -1;
     }
 

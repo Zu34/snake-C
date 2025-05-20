@@ -4,14 +4,6 @@
 #include <stdlib.h>
 #include "time.h"
 
-// These should be declared as extern in player.c or wherever your game state lives
-extern int x1[], y1[], head1, tail1, xdir1, ydir1, score1;
-extern int x2[], y2[], head2, tail2, xdir2, ydir2, score2;
-extern int applex, appley, powerx, powery, power_timer;
-extern char power_type;
-extern int obsx[], obsy[], num_obstacles;
-extern int speed_boost, double_score;
-extern int lives;
 
 void save_game_state(GameState *state) {
     FILE *f = fopen("save.dat", "wb");

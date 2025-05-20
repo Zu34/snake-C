@@ -4,6 +4,17 @@
 #define MAX_LEN 1000
 #define MAX_OBSTACLES 20
 
+
+extern int x1[], y1[], head1, tail1, xdir1, ydir1, score1;
+extern int x2[], y2[], head2, tail2, xdir2, ydir2, score2;
+extern int applex, appley, powerx, powery, power_timer;
+extern char power_type;
+extern int obsx[], obsy[], num_obstacles;
+extern int speed_boost, double_score;
+extern int lives;
+
+
+
 typedef struct {
     int x1[MAX_LEN], y1[MAX_LEN];
     int head1, tail1, xdir1, ydir1, score1;
