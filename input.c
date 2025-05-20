@@ -1,5 +1,6 @@
 #include "input.h"
 #include <termios.h>
+#include <ncurses.h>
 #include <unistd.h>
 #include <sys/select.h>
 #include <stdio.h>

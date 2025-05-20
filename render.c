@@ -1,20 +1,7 @@
 #include "render.h"
 #include <stdio.h>
+#include <ncurses.h>
 
-#define COLS 60
-#define ROWS 30
-
-// ANSI color codes
-#define COLOR_RED    "\e[31m"
-#define COLOR_GREEN  "\e[32m"
-#define COLOR_YELLOW "\e[33m"
-#define COLOR_RESET  "\e[0m"
-
-// Symbols for snake parts
-static const char* snake_head_symbols[] = { "▓", "▓" };
-static const char* snake_body_symbols[] = { "█", "█" };
-static const char* snake_tail_symbols[] = { "■", "■" };
-static const char* apple_symbol = "❤";
 
 // Draw game border
 void draw_border() {

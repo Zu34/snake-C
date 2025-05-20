@@ -1,5 +1,6 @@
 #include <time.h>
 #include "score.h"
+#include <ncurses.h>
 #include <stdio.h>
 
 static time_t start_time;

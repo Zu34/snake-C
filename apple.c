@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <ncurses.h>
 #include "game.h"
 #include "render.h"
 #include "apple.h"

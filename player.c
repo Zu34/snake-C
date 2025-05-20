@@ -4,6 +4,7 @@
 #include "apple.h"
 #include "score.h"
 #include "position.h"
+#include <ncurses.h>
 #include <stdlib.h>
 
 #define POWERUP_DURATION 50

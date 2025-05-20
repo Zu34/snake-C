@@ -1,4 +1,6 @@
 
+# This is a raw printf game! without any UI yet
+
 | Function            | From File  | Purpose                               |
 | ------------------- | ---------- | ------------------------------------- |
 | `draw_border()`     | `render.c` | Draws the frame around the game grid. |

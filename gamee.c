@@ -3,6 +3,7 @@
 #include "game.h"
 #include "player.h"
 #include "input.h"
+#include <ncurses.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
