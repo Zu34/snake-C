@@ -49,7 +49,7 @@ int process_input(int *xdir, int *ydir, int *quit) {
 int process_input_multi(int *xdir1, int *ydir1, int *xdir2, int *ydir2, int *quit) {
     if (!kbhit()) return 0;
     int ch = getchar();
-
+    extern int paused;
     // Player 1 - HJKL
     if (ch == 'h' && *xdir1 != 1) {
         *xdir1 = -1; *ydir1 = 0;
@@ -70,6 +70,13 @@ int process_input_multi(int *xdir1, int *ydir1, int *xdir2, int *ydir2, int *qui
         *xdir2 = 0; *ydir2 = 1;
     } else if (ch == 'w' && *ydir2 != 1) {
         *xdir2 = 0; *ydir2 = -1;
+    }
+
+    if (ch == 'p' || ch == 'P') {
+        paused = !paused;
+        if (paused) printf("PAUSED\n");
+        else printf("RESUMED\n");
+        return 0;
     }
 
     // Quit

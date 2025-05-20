@@ -1,114 +1,186 @@
 #include "score.h"
 #include "render.h"
 #include "game.h"
+#include "player.h"
 #include "input.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include "apple.h"
+
 
 #define MAX_LEN 1000
+#define MAX_OBSTACLES 20
+#define POWERUP_DURATION 50
 
-// S1
+// Snake1
 static int x1[MAX_LEN], y1[MAX_LEN];
 static int head1 = 0, tail1 = 0;
 static int xdir1 = 1, ydir1 = 0;
+static int score1 = 0;
 
-// S2
+// Snake2
 static int x2[MAX_LEN], y2[MAX_LEN];
 static int head2 = 0, tail2 = 0;
 static int xdir2 = -1, ydir2 = 0;
+static int score2 = 0;
 
-// Apple
+// Apple & Power-ups
 static int applex = -1, appley = -1;
+static int powerx = -1, powery = -1;
+static char power_type = 0;  // 'S' or 'D'
+static int power_timer = 0;
+
+// Obstacles
+static int obsx[MAX_OBSTACLES], obsy[MAX_OBSTACLES];
+static int num_obstacles = 0;
 
 static int gameover = 0;
 static int quit = 0;
+static int paused = 0;
+static int speed_boost = 0;
+static int double_score = 0;
 
-void init_game() {
-    srand(time(NULL));
-    head1 = tail1 = 0;
-    x1[head1] = COLS / 3;
-    y1[head1] = ROWS / 2;
-
-    head2 = tail2 = 0;
-    x2[head2] = 2 * COLS / 3;
-    y2[head2] = ROWS / 2;
-
-    xdir1 = 1; ydir1 = 0;
-    xdir2 = -1; ydir2 = 0;
-    applex = -1;
-
-    draw_border();
-    start_timer();
-    reset_score();
-    display_score();
-    display_time();
+void init_obstacles() {
+    num_obstacles = 5;
+    for (int i = 0; i < num_obstacles; i++) {
+        obsx[i] = rand() % COLS;
+        obsy[i] = rand() % ROWS;
+        draw_obstacle(obsx[i], obsy[i]);
+    }
 }
 
-void spawn_apple(int *x1, int *y1, int head1, int tail1,
-                 int *x2, int *y2, int head2, int tail2,
-                 int *ax, int *ay) {
+int is_obstacle(int x, int y) {
+    for (int i = 0; i < num_obstacles; i++)
+        if (obsx[i] == x && obsy[i] == y)
+            return 1;
+    return 0;
+}
+
+void spawn_apple() {
     while (1) {
         int valid = 1;
-        *ax = rand() % COLS;
-        *ay = rand() % ROWS;
+        applex = rand() % COLS;
+        appley = rand() % ROWS;
 
         for (int i = tail1; i != head1; i = (i + 1) % MAX_LEN)
-            if (x1[i] == *ax && y1[i] == *ay) valid = 0;
+            if (x1[i] == applex && y1[i] == appley) valid = 0;
         for (int i = tail2; i != head2; i = (i + 1) % MAX_LEN)
-            if (x2[i] == *ax && y2[i] == *ay) valid = 0;
+            if (x2[i] == applex && y2[i] == appley) valid = 0;
+        if (is_obstacle(applex, appley)) valid = 0;
 
         if (valid) break;
     }
+    draw_apple(applex, appley);
+}
 
-    draw_apple(*ax, *ay);
+void spawn_powerup() {
+    if (powerx >= 0) return;  // already active
+    if (rand() % 10 < 3) return;  // 30% chance
+
+    powerx = rand() % COLS;
+    powery = rand() % ROWS;
+    power_type = (rand() % 2 == 0) ? 'S' : 'D';
+    power_timer = POWERUP_DURATION;
+    draw_powerup(powerx, powery, power_type);
+}
+
+int check_collision(int x, int y, int *ox, int *oy, int head, int tail) {
+    for (int i = tail; i != head; i = (i + 1) % MAX_LEN)
+        if (ox[i] == x && oy[i] == y)
+            return 1;
+    return 0;
 }
 
 void move_snake(int *x, int *y, int *head, int *tail,
-                int xdir, int ydir, int *ax, int *ay, int player_id) {
+                int xdir, int ydir, int player_id, int *score) {
     clear_tail(x[*tail], y[*tail]);
 
     int newhead = (*head + 1) % MAX_LEN;
     x[newhead] = (x[*head] + xdir + COLS) % COLS;
     y[newhead] = (y[*head] + ydir + ROWS) % ROWS;
-    *head = newhead;
 
-    // Check collision with self
-    for (int i = *tail; i != *head; i = (i + 1) % MAX_LEN)
-        if (x[i] == x[*head] && y[i] == y[*head])
-            gameover = 1;
+    // Self collision
+    if (check_collision(x[newhead], y[newhead], x, y, *head, *tail))
+        gameover = 1;
 
-    // Check for apple
-    if (x[*head] == *ax && y[*head] == *ay) {
-        *ax = -1;
+    // Obstacle collision
+    if (is_obstacle(x[newhead], y[newhead]))
+        gameover = 1;
+
+    // Cross-snake collision
+    if (player_id == 1 && check_collision(x[newhead], y[newhead], x2, y2, head2, tail2))
+        gameover = 1;
+    if (player_id == 2 && check_collision(x[newhead], y[newhead], x1, y1, head1, tail1))
+        gameover = 1;
+
+    // Apple
+    if (check_apple_collision(x[newhead], y[newhead], applex, appley)) {
+        applex = -1;
         increase_score();
         display_score();
-        display_time();
     } else {
         *tail = (*tail + 1) % MAX_LEN;
     }
+    
 
+    // Power-up
+    if (x[newhead] == powerx && y[newhead] == powery) {
+        if (power_type == 'S') speed_boost = 1;
+        if (power_type == 'D') double_score = 1;
+        powerx = -1;
+    }
+
+    *head = newhead;
     draw_snake_head(x[*head], y[*head], player_id);
+}
+
+Player player1, player2;
+
+void init_game() {
+    srand(time(NULL));
+    draw_border();
+    init_obstacles();
+    init_player(&player1, COLS / 3, ROWS / 2, 1, 0, 1);
+    init_player(&player2, 2 * COLS / 3, ROWS / 2, -1, 0, 2);
+    applex = -1; powerx = -1;
+    reset_score();
+    start_timer();
+    display_score();
+    display_time();
 }
 
 void run_game_loop() {
     while (!quit && !gameover) {
-        if (applex < 0)
-            spawn_apple(x1, y1, head1, tail1, x2, y2, head2, tail2, &applex, &appley);
+        process_input_multi(&player1.xdir, &player1.ydir, &player2.xdir, &player2.ydir, &quit, &paused);
 
-        // Move snakes
-        move_snake(x1, y1, &head1, &tail1, xdir1, ydir1, &applex, &appley, 1);
-        move_snake(x2, y2, &head2, &tail2, xdir2, ydir2, &applex, &appley, 2);
+        if (paused) {
+            show_status("PAUSED");
+            usleep(150000);
+            continue;
+        }
 
-        // input
-        process_input_multi(&xdir1, &ydir1, &xdir2, &ydir2, &quit);
+        if (applex < 0) spawn_apple();
+        spawn_powerup();
 
-        usleep(100000 - (get_level() - 1) * 10000);
+        move_player(&player1, &player2);
+        move_player(&player2, &player1);
+
+        display_score();
+        printf("\033[F");  
+        display_time();
+        fflush(stdout);
+
+        if (power_timer > 0) power_timer--;
+        else { speed_boost = 0; double_score = 0; }
+
+        usleep(speed_boost ? 60000 : 100000);
     }
 
     if (gameover) {
         show_game_over();
-        getchar(); 
+        printf("Final Score: P1=%d P2=%d\n", player1.score, player2.score);
+        getchar();
     }
 }
