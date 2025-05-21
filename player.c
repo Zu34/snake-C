@@ -1,24 +1,40 @@
-
 #include "player.h"
 #include "render.h"
 #include "apple.h"
 #include "score.h"
+#include "game.h"
 #include "position.h"
+#include "game_utils.h"
 #include <ncurses.h>
+#include <termios.h>
 #include <stdlib.h>
 
-#define POWERUP_DURATION 50
+// int power_timer = 0;
+extern int applex, appley;
+extern int gameover;
+extern int powerx, powery;
+extern char power_type;
+extern int power_timer;
+extern int speed_boost;
+extern int double_score;
 
-static int power_timer = 0;
+
+// int applex = -1, appley = -1;
+// int gameover = 0;
+// int powerx = -1, powery = -1;
+// char power_type = '\0';
+// int speed_boost = 0;
+// int double_score = 0;
 
 void init_player(Player *p, int start_x, int start_y, int xdir, int ydir, int id) {
     p->head = p->tail = 0;
-    p->x[0] = start_x;
-    p->y[0] = start_y;
+    p->body[0].x = start_x;
+    p->body[0].y = start_y;
     p->xdir = xdir;
     p->ydir = ydir;
     p->score = 0;
     p->id = id;
+    p->frozen_turns = 0;
     draw_snake_head(start_x, start_y, id);
 }
 
@@ -27,44 +43,39 @@ void teleport_player(Player *p) {
     do {
         tx = rand() % COLS;
         ty = rand() % ROWS;
-    } while (position_in_snake((Position){tx, ty}, p->x, p->head, p->tail) || is_obstacle(tx, ty));
-    p->x[p->head] = tx;
-    p->y[p->head] = ty;
+    } while (position_in_snake((Position){tx, ty}, p->body, p->head, p->tail) || is_obstacle(tx, ty));
+    p->body[p->head].x = tx;
+    p->body[p->head].y = ty;
 }
 
 void shrink_player(Player *p) {
-    // Shrink player 
     if (p->head != p->tail) {
         p->tail = (p->tail + 1) % MAX_LEN;
     }
 }
 
-
 void move_player(Player *p, Player *opponent) {
     if (p->frozen_turns > 0) {
         p->frozen_turns--;
-        // Skip move if frozen
         return;
     }
 
-    clear_tail(p->x[p->tail], p->y[p->tail]);
+    clear_tail(p->body[p->tail].x, p->body[p->tail].y);
 
     int newhead = (p->head + 1) % MAX_LEN;
-    p->x[newhead] = (p->x[p->head] + p->xdir + COLS) % COLS;
-    p->y[newhead] = (p->y[p->head] + p->ydir + ROWS) % ROWS;
+    p->body[newhead].x = (p->body[p->head].x + p->xdir + COLS) % COLS;
+    p->body[newhead].y = (p->body[p->head].y + p->ydir + ROWS) % ROWS;
 
-    if (position_in_snake((Position){p->x[newhead], p->y[newhead]}, p->x, p->head, p->tail))
+    if (position_in_snake(p->body[newhead], p->body, p->head, p->tail))
         gameover = 1;
 
-
-    if (position_in_snake((Position){p->x[newhead], p->y[newhead]}, opponent->x, opponent->head, opponent->tail))
+    if (position_in_snake(p->body[newhead], opponent->body, opponent->head, opponent->tail))
         gameover = 1;
 
- 
-    if (is_obstacle(p->x[newhead], p->y[newhead]))
+    if (is_obstacle(p->body[newhead].x, p->body[newhead].y))
         gameover = 1;
 
-    if (check_apple_collision(p->x[newhead], p->y[newhead], applex, appley)) {
+    if (check_apple_collision(p->body[newhead].x, p->body[newhead].y, applex, appley)) {
         applex = -1;
         increase_score();
         p->score += double_score ? 2 : 1;
@@ -73,7 +84,7 @@ void move_player(Player *p, Player *opponent) {
         p->tail = (p->tail + 1) % MAX_LEN;
     }
 
-    if (p->x[newhead] == powerx && p->y[newhead] == powery) {
+    if (p->body[newhead].x == powerx && p->body[newhead].y == powery) {
         switch (power_type) {
             case 'S': speed_boost = 1; break;
             case 'D': double_score = 1; break;
@@ -85,5 +96,5 @@ void move_player(Player *p, Player *opponent) {
     }
 
     p->head = newhead;
-    draw_snake_head(p->x[p->head], p->y[p->head], p->id);
+    draw_snake_head(p->body[p->head].x, p->body[p->head].y, p->id);
 }

@@ -1,4 +1,4 @@
-#include "time.h"
+#include "time_utils.h"
 #include <time.h>
 #include <stdio.h>
 
@@ -9,17 +9,15 @@ void start_timer(void) {
 }
 
 int get_elapsed_seconds(void) {
-    time_t now = time(NULL);
-    return (int)difftime(now, start_time);
+    return (int)(time(NULL) - start_time);
 }
 
 void display_time(void) {
     int elapsed = get_elapsed_seconds();
     int minutes = elapsed / 60;
     int seconds = elapsed % 60;
-    
-    printf("\033[F");   
+
+    printf("\033[F");  // move cursor up one line
     printf("\rTime: %02d:%02d\n", minutes, seconds);
     fflush(stdout);
 }
-

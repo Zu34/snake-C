@@ -1,4 +1,5 @@
 #include <time.h>
+#include "game.h"
 #include "score.h"
 #include <ncurses.h>
 #include <stdio.h>
@@ -6,6 +7,18 @@
 static time_t start_time;
 static int score = 0;
 static int level = 1;
+
+
+
+void init_score() {
+    score = 0;
+}
+
+
+int get_score() {
+    return score;
+}
+
 
 void reset_score() {
     score = 0;
@@ -15,10 +28,6 @@ void reset_score() {
 void increase_score() {
     score++;
     level = score / 5 + 1; // Level increases every 5 points
-}
-
-int get_score() {
-    return score;
 }
 
 int get_level() {

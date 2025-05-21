@@ -1,27 +1,25 @@
-
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "position.h"  // Defines Position struct
+
 #define MAX_LEN 1000
 
-extern int applex, appley;
-extern int gameover;
-extern int powerx, powery, power_timer;
-extern char power_type;
-extern int speed_boost, double_score;
-
-typedef struct {
-    int x[MAX_LEN];
-    int y[MAX_LEN];
+typedef struct Player {
+    Position body[MAX_LEN];
     int head;
     int tail;
     int xdir;
     int ydir;
     int score;
-    int id;  
-    int frozen_turns; 
+    int id;
+    int frozen_turns;
 } Player;
 
+// Player function declarations
 void init_player(Player *p, int start_x, int start_y, int xdir, int ydir, int id);
 void move_player(Player *p, Player *opponent);
-#endif
+void teleport_player(Player *p);
+void shrink_player(Player *p);
+
+#endif // PLAYER_H

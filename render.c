@@ -1,71 +1,61 @@
+
+
 #include "render.h"
-#include <stdio.h>
+#include "game_utils.h"
 #include <ncurses.h>
 
-
-// Draw game border
 void draw_border() {
-    printf("┌");
-    for (int i = 0; i < COLS; i++) printf("─");
-    printf("┐\n");
-
-    for (int j = 0; j < ROWS; j++) {
-        printf("│");
-        for (int i = 0; i < COLS; i++) printf("·");
-        printf("│\n");
+    for (int i = 0; i <= COLS + 1; i++) {
+        mvaddch(0, i, '-');
+        mvaddch(ROWS + 1, i, '-');
     }
 
-    printf("└");
-    for (int i = 0; i < COLS; i++) printf("─");
-    printf("┘\n");
+    for (int j = 1; j <= ROWS; j++) {
+        mvaddch(j, 0, '|');
+        for (int i = 1; i <= COLS; i++) {
+            mvaddch(j, i, '.');  // background dots
+        }
+        mvaddch(j, COLS + 1, '|');
+    }
+
+    refresh();
 }
 
-// Draw snake head at (x, y) with player color
 void draw_snake_head(int x, int y, int player_id) {
-    const char* color = (player_id == 1) ? COLOR_GREEN : COLOR_RED;
-    printf("\e[%dB\e[%dC%s%s%s", y + 1, x + 1, color, snake_head_symbols[player_id - 1], COLOR_RESET);
-    printf("\e[%dF", y + 1);
-    fflush(stdout);
+    attron(COLOR_PAIR(player_id));
+    mvprintw(y + 1, x + 1, "%s", snake_head_symbols[player_id - 1]);
+    attroff(COLOR_PAIR(player_id));
 }
 
-// Draw snake body part at (x, y) with player color
 void draw_snake_body(int x, int y, int player_id) {
-    const char* color = (player_id == 1) ? COLOR_GREEN : COLOR_RED;
-    printf("\e[%dB\e[%dC%s%s%s", y + 1, x + 1, color, snake_body_symbols[player_id - 1], COLOR_RESET);
-    printf("\e[%dF", y + 1);
-    fflush(stdout);
+    attron(COLOR_PAIR(player_id));
+    mvprintw(y + 1, x + 1, "%s", snake_body_symbols[player_id - 1]);
+    attroff(COLOR_PAIR(player_id));
 }
 
-// Draw snake tail at (x, y) with player color
 void draw_snake_tail(int x, int y, int player_id) {
-    const char* color = (player_id == 1) ? COLOR_GREEN : COLOR_RED;
-    printf("\e[%dB\e[%dC%s%s%s", y + 1, x + 1, color, snake_tail_symbols[player_id - 1], COLOR_RESET);
-    printf("\e[%dF", y + 1);
-    fflush(stdout);
+    attron(COLOR_PAIR(player_id));
+    mvprintw(y + 1, x + 1, "%s", snake_tail_symbols[player_id - 1]);
+    attroff(COLOR_PAIR(player_id));
 }
 
-// Clear cell at (x, y)
 void clear_cell(int x, int y) {
-    printf("\e[%dB\e[%dC·", y + 1, x + 1);
-    printf("\e[%dF", y + 1);
-    fflush(stdout);
+    mvprintw(y + 1, x + 1, ".");
 }
 
-// Clear tail cell
 void clear_tail(int x, int y) {
     clear_cell(x, y);
 }
 
-
 void draw_apple(int x, int y) {
-    printf("\e[%dB\e[%dC%s%s%s", y + 1, x + 1, COLOR_YELLOW, apple_symbol, COLOR_RESET);
-    printf("\e[%dF", y + 1);
-    fflush(stdout);
+    attron(COLOR_PAIR(3));
+    mvprintw(y + 1, x + 1, "%s", apple_symbol);
+    attroff(COLOR_PAIR(3));
 }
 
-// Show game over message
 void show_game_over() {
-    printf("\e[%dB\e[%dC Game Over! Press any key to exit. ", ROWS / 2, COLS / 2 - 10);
-    printf("\e[%dF", ROWS / 2);
-    fflush(stdout);
+    int x = COLS / 2 - 10;
+    int y = ROWS / 2;
+    mvprintw(y, x, "Game Over! Press any key.");
+    refresh();
 }
