@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "position.h"  // Defines Position struct
+#include "position.h" 
 
 #define MAX_LEN 1000
 
@@ -21,5 +21,5 @@ void init_player(Player *p, int start_x, int start_y, int xdir, int ydir, int id
 void move_player(Player *p, Player *opponent);
 void teleport_player(Player *p);
 void shrink_player(Player *p);
-
+int check_collision(Position pos, Player *p);
 #endif // PLAYER_H

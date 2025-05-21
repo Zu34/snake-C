@@ -18,14 +18,6 @@ extern int power_timer;
 extern int speed_boost;
 extern int double_score;
 
-
-// int applex = -1, appley = -1;
-// int gameover = 0;
-// int powerx = -1, powery = -1;
-// char power_type = '\0';
-// int speed_boost = 0;
-// int double_score = 0;
-
 void init_player(Player *p, int start_x, int start_y, int xdir, int ydir, int id) {
     p->head = p->tail = 0;
     p->body[0].x = start_x;
@@ -97,4 +89,16 @@ void move_player(Player *p, Player *opponent) {
 
     p->head = newhead;
     draw_snake_head(p->body[p->head].x, p->body[p->head].y, p->id);
+}
+int check_collision(Position pos, Player *p) {
+    int i = p->tail;
+    while (i != p->head) {
+        if (p->body[i].x == pos.x && p->body[i].y == pos.y)
+            return 1;
+        i = (i + 1) % MAX_LEN;
+    }
+    // Check head too
+    if (p->body[p->head].x == pos.x && p->body[p->head].y == pos.y)
+        return 1;
+    return 0;
 }
