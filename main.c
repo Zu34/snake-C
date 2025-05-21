@@ -2,8 +2,10 @@
 #include "game.h"
 #include <stdlib.h>
 #include <ncurses.h>
+#include <locale.h>
 
 int main() {
+    setlocale(LC_ALL, ""); 
     initscr();              // Start ncurses mode
     cbreak();               // Disable line buffering
     noecho();               // Don't echo input

@@ -7,7 +7,7 @@
 
 #define ROWS 30
 #define GAME_COLS 60
-#define ROWS 30
+
 
 // ANSI color codes
 #define COLOR_RED_TXT    "\e[31m"

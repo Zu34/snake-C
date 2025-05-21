@@ -46,7 +46,7 @@ void init_obstacles() {
 
 void init_game() {
     srand(time(NULL));  // Init random seed
-    initscr;
+    initscr();  
     get_score();
     init_obstacles();
     init_player(&player1, 5, 5, 1, 0, 1);
